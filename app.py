@@ -1,5 +1,5 @@
 from dotenv import load_dotenv
-
+import fitz  # PyMuPDF
 load_dotenv()
 import base64
 import streamlit as st
@@ -19,14 +19,15 @@ def get_gemini_response(input,pdf_content,prompt): # input is the user input, pd
 def input_pdf_setup(uploaded_file): # Function to process the uploaded PDF file and convert it to images
     if uploaded_file is not None: # Check if a file is uploaded
         ## Convert the PDF to image
-        images=pdf2image.convert_from_bytes(uploaded_file.read(), poppler_path=r"C:\poppler\Library\bin") # Convert the PDF to images in bytes format
-
-        first_page=images[0] # Get the first page of the PDF as an image, first page as it is the most relevant for the user input
+        doc = fitz.open(stream=uploaded_file.read(), filetype="pdf")
+        page = doc.load_page(0)  # First page
+        pix = page.get_pixmap()
 
         # Convert to bytes, bytes are required for the model to process the image 
         img_byte_arr = io.BytesIO()  # Create a BytesIO object to hold the image bytes , hold means the image bytes will be stored in this object
         # img_byte_arr is an array of bytes of type BytesIO, specifically used to hold the image bytes in memory
-        first_page.save(img_byte_arr, format='JPEG') # Save the image to the BytesIO object in JPEG format in memory stream
+        img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples) # Create an image from the pixmap samples, this is the image representation of the first page of the PDF
+        img.save(img_byte_arr, format='JPEG') # Save the image to the BytesIO object in JPEG format
         img_byte_arr = img_byte_arr.getvalue() # Get the byte value of the image from memory stream
 
         pdf_parts = [ # Create a list of parts for the PDF, here we are only using the first page as it is the most relevant for the user input
