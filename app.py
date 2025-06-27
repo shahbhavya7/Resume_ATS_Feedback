@@ -21,7 +21,7 @@ def input_pdf_setup(uploaded_file): # Function to process the uploaded PDF file 
         ## Convert the PDF to image
         doc = fitz.open(stream=uploaded_file.read(), filetype="pdf")
         page = doc.load_page(0)  # First page
-        pix = page.get_pixmap()
+        pix = page.get_pixmap() # Get the pixmap of the first page, pixmap is a representation of the page as an image in memory
 
         # Convert to bytes, bytes are required for the model to process the image 
         img_byte_arr = io.BytesIO()  # Create a BytesIO object to hold the image bytes , hold means the image bytes will be stored in this object
